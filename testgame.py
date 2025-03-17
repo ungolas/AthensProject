@@ -1,27 +1,37 @@
 import time
 import curses
 import random
+import numpy as np
+
 
 def main(stdscr):
-    curses.curs_set(0)  # Versteckt den Cursor
-    height, width = 20, 50  # Hintergrundgröße
+    curses.curs_set(0)
+    height, width = 20, 50
+
+    # Create a 2D NumPy array for the screen
+    screen_array = np.full((height, width), ' ', dtype=str)
 
     while True:
+        # Clear array
+        screen_array[:] = ' '
+
+        # Draw border
+        screen_array[0, :] = '#'
+        screen_array[height-1, :] = '#'
+        screen_array[:, 0] = '#'
+        screen_array[:, width-1] = '#'
+
+        # Place random points
+        for _ in range(10):
+            r = random.randint(1, height - 2)
+            c = random.randint(1, width - 2)
+            screen_array[r, c] = '*'
+
+        # Render the array
         stdscr.clear()
-        # Beispiel: Einfacher Rahmen fürs "Hintergrundfenster"
         for row in range(height):
             for col in range(width):
-                if row in (0, height-1) or col in (0, width-1):
-                    stdscr.addch(row, col, '#')
-                else:
-                    stdscr.addch(row, col, ' ')
-        
-        # Zeichne zufällige Punkte
-        for _ in range(10):
-            rand_row = random.randint(1, height - 2)
-            rand_col = random.randint(1, width - 2)
-            stdscr.addch(rand_row, rand_col, '*')
-
+                stdscr.addch(row, col, screen_array[row, col])
         stdscr.refresh()
         time.sleep(1)  # Aktualisiere alle 1 Sekunde
 
