@@ -90,7 +90,7 @@ def main(stdscr):
 
     # Variables for the walls
     timesteps = 0
-    wallwidth = 3                   # width of the wall
+    wallwidth = 5                   # width of the wall
     wall_distance = 24 + wallwidth  # horizontal distance between consecutive walls
     opening_height = 10             # height of the opening in the wall
     offset = 6                      # maximum vertical offset of the center points of consecutive walls
@@ -147,7 +147,7 @@ def main(stdscr):
         if start_draw_wall:
             draw_wall_width += 1
             if draw_wall_width <= wallwidth:
-                wall_piece = draw_wall(total_height-2, wallwidth, opening_height, last_center, draw_wall_width)
+                wall_piece = draw_wall(total_height, wallwidth, opening_height, last_center, draw_wall_width)
                 for i in range(1, total_height-1):
                     screen_array[i, total_width-2] = wall_piece[i-1]
             else:
@@ -178,13 +178,13 @@ def main(stdscr):
 
 def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_piece):
         if current_wall_piece == 1 or current_wall_piece == wallwidth:
-            wall_piece = np.full((height), '|', dtype=str)
+            wall_piece = np.full((height-2), '|', dtype=str)
             wall_piece[opening_position - math.ceil(opening_height/2):opening_position + math.ceil(opening_height/2)] = ' '
             return wall_piece
         elif current_wall_piece > 1 and current_wall_piece < wallwidth:
-            wall_piece = np.full((height), ' ', dtype=str)
-            wall_piece[opening_position + math.ceil(opening_height/2)+1] = '_'
-            wall_piece[opening_position - math.ceil(opening_height/2)] = '_'
+            wall_piece = np.full((height-2), ' ', dtype=str)
+            wall_piece[opening_position + math.ceil(opening_height/2)-1] = '_'
+            wall_piece[opening_position - math.ceil(opening_height/2)-1] = '_'
             return wall_piece
         else:
             return np.full((height), ' ', dtype=str)
