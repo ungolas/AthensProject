@@ -6,13 +6,13 @@ import numpy as np
 
 
 class Wall:
-    def __init__(self, height, width, opening_height, last_center):
+    def __init__(self, height, width, opening_height, offset, last_center):
         self.height = height
         self.width = width
         self.opening_height = opening_height
         # Adjust opening_position relative to wall height
-        upper_bound = min(last_center + 10, height - opening_height//2+1)
-        lower_bound = max(last_center - 10, opening_height//2)
+        upper_bound = min(last_center + offset, height - math.ceil(opening_height/2)-1)
+        lower_bound = max(last_center - offset, math.ceil(opening_height/2)+1)
         self.opening_position = random.randint(lower_bound, upper_bound)
 
     def __str__(self):
@@ -84,9 +84,10 @@ def main(stdscr):
     screen_array[:, total_width-1] = '#'
 
     timesteps = 0
-    wall_distance = 20
-    opening_height = 10
-    last_center = total_height//2
+    wall_distance = 24              # horizontal distance between consecutive walls
+    opening_height = 10             # height of the opening in the wall
+    offset = 6                      # maximum vertical offset of the center points of consecutive walls
+    last_center = total_height//2   # initial center point of the opening
 
     # Current score
     score = 0
@@ -124,7 +125,7 @@ def main(stdscr):
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
             # Create the wall for the interior only.
-            wall = Wall(total_height-2, 1, opening_height, last_center)
+            wall = Wall(total_height-2, 1, opening_height, offset, last_center)
             last_center = wall.opening_position
             wall_lines = str(wall).split("\n")
             for i in range(1, total_height-1):
