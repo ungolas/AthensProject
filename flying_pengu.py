@@ -20,10 +20,15 @@ class Wall:
         rows = []
         for i in range(self.height):
             if i < self.opening_position - self.opening_height//2 or i >= self.opening_position + self.opening_height//2:
-                rows.append("#" * self.width)
+                rows.append("| |" * self.width)
+            elif i == self.opening_position - self.opening_height//2:
+                rows.append("   " * self.width)
+
             else:
-                rows.append(" " * self.width)
+                rows.append("   " * self.width)
         return "\n".join(rows)
+    
+
     
 class Penguin:
     def __init__(self):
@@ -83,11 +88,16 @@ def main(stdscr):
     screen_array[:, 0] = '#'
     screen_array[:, total_width-1] = '#'
 
+    # Variables for the walls
     timesteps = 0
-    wall_distance = 24              # horizontal distance between consecutive walls
+    wallwidth = 3                   # width of the wall
+    wall_distance = 24 + wallwidth  # horizontal distance between consecutive walls
     opening_height = 10             # height of the opening in the wall
     offset = 6                      # maximum vertical offset of the center points of consecutive walls
     last_center = total_height//2   # initial center point of the opening
+    start_draw_wall = False
+    draw_wall_width = 0
+    current_wall = None
 
     # Current score
     score = 0
@@ -115,7 +125,7 @@ def main(stdscr):
                     return           # exit main() function
                 elif key == 10:
                     paused = False   # resume the game
-
+        
         # Shift the interior (non-border) left by one column.
         # Columns 1 to total_width-2 are the interior.
         screen_array[1:total_height-1, 1:total_width-2] = screen_array[1:total_height-1, 2:total_width-1]
@@ -124,12 +134,27 @@ def main(stdscr):
 
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
-            # Create the wall for the interior only.
-            wall = Wall(total_height-2, 1, opening_height, offset, last_center)
-            last_center = wall.opening_position
-            wall_lines = str(wall).split("\n")
-            for i in range(1, total_height-1):
-                screen_array[i, total_width-2] = wall_lines[i-1]
+            # # Create the wall for the interior only.
+            # wall = Wall(total_height-2, 3, opening_height, offset, last_center)
+            # last_center = wall.opening_position
+            # wall_lines = str(wall).split("\n")
+            # for i in range(1, total_height-1):
+            #     screen_array[i, total_width-2] = wall_lines[i-1]
+            start_draw_wall = True
+            current_wall = Wall(total_height-2, wallwidth, opening_height, offset, last_center)
+            last_center = current_wall.opening_position
+            
+        if start_draw_wall:
+            draw_wall_width += 1
+            if draw_wall_width <= wallwidth:
+                wall_piece = draw_wall(total_height-2, wallwidth, opening_height, last_center, draw_wall_width)
+                for i in range(1, total_height-1):
+                    screen_array[i, total_width-2] = wall_piece[i-1]
+            else:
+                draw_wall_width = 0
+                start_draw_wall = False
+
+
 
         screen_array[7:13, 14:26] = penguin.fly()
 
@@ -150,6 +175,20 @@ def main(stdscr):
 
         time.sleep(0.01)
         timesteps += 1
+
+def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_piece):
+        if current_wall_piece == 1 or current_wall_piece == wallwidth:
+            wall_piece = np.full((height), '|', dtype=str)
+            wall_piece[opening_position - math.ceil(opening_height/2):opening_position + math.ceil(opening_height/2)] = ' '
+            return wall_piece
+        elif current_wall_piece > 1 and current_wall_piece < wallwidth:
+            wall_piece = np.full((height), ' ', dtype=str)
+            wall_piece[opening_position + math.ceil(opening_height/2)+1] = '_'
+            wall_piece[opening_position - math.ceil(opening_height/2)] = '_'
+            return wall_piece
+        else:
+            return np.full((height), ' ', dtype=str)
+
 
 def create_pause_screen(height, width, score):
     center_width = width // 2
