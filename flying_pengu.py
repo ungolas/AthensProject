@@ -1,5 +1,6 @@
 import time
 import curses
+import math
 import random
 import numpy as np
 from draw_penguin import draw_penguin_wings_down, draw_penguin_wings_up
@@ -25,7 +26,7 @@ class Wall:
 class Penguin:
     def __init__(self):
         self.height = 6
-        self.width = 11
+        self.width = 12
         self.ascii_art = self.wings_up()
         self.fly_status = True
         self.timesteps = 0
@@ -64,6 +65,8 @@ class Penguin:
 
 def main(stdscr):
     curses.curs_set(0)
+    stdscr.nodelay(True)  # This allows getch() to be non-blocking
+
     total_height, total_width = 20, 50
 
     # Create a 2D NumPy array for the screen filled with spaces.
@@ -82,7 +85,32 @@ def main(stdscr):
     wall_distance = 20
     opening_height = 7
 
+    # Current score
+    score = 0
+
+    # Pause flag
+    paused = False
+
     while True:
+        # Track the pressed keys
+        key = stdscr.getch()
+
+        if key == 27:
+            paused = True
+            pause_screen = create_pause_screen(total_height, total_width, score)
+            stdscr.clear()
+            for row in range(total_height):
+                for col in range(total_width):
+                    stdscr.addch(row, col, pause_screen[row, col])
+            stdscr.refresh()
+            while paused:
+                key = stdscr.getch()
+                if key == 27:
+                    curses.endwin()  # Bildschirm zurücksetzen
+                    return           # main() verlassen -> zurück ins Terminal
+                elif key == 10:
+                    paused = False
+
         # Shift the interior (non-border) left by one column.
         # Columns 1 to total_width-2 are the interior.
         screen_array[1:total_height-1, 1:total_width-2] = screen_array[1:total_height-1, 2:total_width-1]
@@ -112,8 +140,23 @@ def main(stdscr):
                 stdscr.addch(row, col, screen_array[row, col])
         stdscr.refresh()
 
+        
+
         time.sleep(0.01)
         timesteps += 1
+
+def create_pause_screen(height, width, score):
+    center_width = width // 2
+    center_height = height // 2
+    pause_screen = np.full((height, width), ' ', dtype=str)
+
+    str_paused = "GAME PAUSED"
+    str_press = "Press Enter to resume or ESC to quit"
+    str_score = f"Score: {score}"
+    pause_screen[center_height - 1, center_width - math.floor(len(str_paused)/2):center_width + math.ceil(len(str_paused)/2)] = list(str_paused)
+    pause_screen[center_height, center_width - math.floor(len(str_press)/2):center_width + math.ceil(len(str_press)/2)] = list(str_press)
+    pause_screen[center_height + 1, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
+    return pause_screen
 
 if __name__ == "__main__":
     curses.wrapper(main)
