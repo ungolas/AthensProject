@@ -111,7 +111,6 @@ def main(stdscr):
 
     # mastcount for score
     mastcount=0
-    
     while True:
         # delete the pinguin from the previous iteration
         screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
@@ -144,12 +143,6 @@ def main(stdscr):
 
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
-            # # Create the wall for the interior only.
-            # wall = Wall(total_height-2, 3, opening_height, offset, last_center)
-            # last_center = wall.opening_position
-            # wall_lines = str(wall).split("\n")
-            # for i in range(1, total_height-1):
-            #     screen_array[i, total_width-2] = wall_lines[i-1]
             start_draw_wall = True
             current_wall = Wall(total_height-2, wallwidth, opening_height, offset, last_center)
             last_center = current_wall.opening_position
@@ -166,17 +159,18 @@ def main(stdscr):
 
         # if spacebar is active the penguin jumps
         if key == 32:
-            if y_end-5>5 :
-                y_start -= 5
-                y_end -= 5          
+            if y_end-20>20 :
+                y_start -= 20
+                y_end -= 20          
         # if spacebar is not active penguin falls
         else:
-            if y_end+1<29:
-               y_start += 1     
-               y_end += 1
+            if timesteps%1000==0:
+                if y_end+1<29:
+                    y_start += 1     
+                    y_end += 1
 
-        # if the penguin flys into the mast the boolean for bracking up the game is activ
-        if(screen_array[y_start, x_end]=='_' or screen_array[y_start, x_end]=='|'):
+        # if the penguin flys into the mast the boolean for bracking    p the game is activ
+        if(screen_array[y_start:y_end, x_end]=='_' or screen_array[y_start, x_end]=='|'):
             crash=True
         if(screen_array[y_end, x_end]=='_' or screen_array[y_end, x_end]=='|'):
             crash=True      
@@ -263,7 +257,6 @@ def create_crash_screen(height, width, score):
     pause_screen[center_height, center_width - math.floor(len(str_press)/2):center_width + math.ceil(len(str_press)/2)] = list(str_press)
     pause_screen[center_height + 1, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
     return pause_screen
-
 
 if __name__ == "__main__":
     curses.wrapper(main)
