@@ -15,20 +15,6 @@ class Wall:
         lower_bound = max(last_center - offset, math.ceil(opening_height/2)+1)
         self.opening_position = random.randint(lower_bound, upper_bound)
 
-    def __str__(self):
-        # Build list of rows using '#' except in the opening.
-        rows = []
-        for i in range(self.height):
-            if i < self.opening_position - self.opening_height//2 or i >= self.opening_position + self.opening_height//2:
-                rows.append("| |" * self.width)
-            elif i == self.opening_position - self.opening_height//2:
-                rows.append("   " * self.width)
-
-            else:
-                rows.append("   " * self.width)
-        return "\n".join(rows)
-    
-
     
 class Penguin:
     def __init__(self):
@@ -69,6 +55,15 @@ class Penguin:
         pengu_array = np.array([list(line) for line in pengu_art])
         return pengu_array
 
+    def pengu_gone(self):
+        pengu_art=["            ",
+                   "            ",
+                   "            ",
+                   "            ",
+                   "            ",
+                   "            "]
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
 
 def main(stdscr):
     curses.curs_set(0)
@@ -105,7 +100,16 @@ def main(stdscr):
     # Pause flag
     paused = False
 
+    # Initialization of the starting position of the penguin
+    y_start=7
+    y_end=13
+    x_start=14
+    x_end=26
+
     while True:
+        # delete the pinguin from the previous iteration
+        screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
+        
         # Track the pressed keys
         key = stdscr.getch()
 
@@ -154,9 +158,17 @@ def main(stdscr):
                 draw_wall_width = 0
                 start_draw_wall = False
 
-
-
-        screen_array[7:13, 14:26] = penguin.fly()
+        # if spacebar is active the penguin jumps
+        if key == 32:
+            if y_end-5>5 :
+                y_start -= 5
+                y_end -= 5          
+        # if spacebar is not active penguin falls
+        else:
+            if y_end+1<29:
+               y_start += 1     
+               y_end += 1       
+        screen_array[y_start:y_end, x_start:x_end] = penguin.fly()
 
         # Reapply border (overwrite any changes in the border area).
         screen_array[0, :] = '#'
