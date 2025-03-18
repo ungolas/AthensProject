@@ -2,7 +2,7 @@ import time
 import curses
 import random
 import numpy as np
-from draw_penguin import draw_penguin
+from draw_penguin import draw_penguin_wings_down, draw_penguin_wings_up
 
 class Wall:
     def __init__(self, height, width, opening_height):
@@ -21,6 +21,46 @@ class Wall:
             else:
                 rows.append(" " * self.width)
         return "\n".join(rows)
+    
+class Penguin:
+    def __init__(self):
+        self.height = 6
+        self.width = 11
+        self.ascii_art = self.wings_up()
+        self.fly_status = True
+        self.timesteps = 0
+
+    def fly(self):
+        self.timesteps += 1
+        if self.timesteps % 10 == 0:
+            self.fly_status = not self.fly_status
+            self.timesteps = 0
+            if(self.fly_status):
+                self.ascii_art = self.wings_down()
+            else:
+                self.ascii_art = self.wings_up()
+        return self.ascii_art
+    
+    def wings_down(self):
+        pengu_art = ["       __   ",
+                     "     .' o)=-",
+                     "    /.-.'   ",
+                     "   //  |\   ",
+                     "   ||  |'   ",
+                     " _,:(_/_    "]
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
+    
+    def wings_up(self):
+        pengu_art = ["       __   ",
+                     "     .' o)=-",
+                     " _  /.-.',_ ",
+                     "  \,/  |/   ",
+                     "   ||  |'   ",
+                     " _,:(_/_    "]
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
+
 
 def main(stdscr):
     curses.curs_set(0)
@@ -30,7 +70,7 @@ def main(stdscr):
     screen_array = np.full((total_height, total_width), ' ', dtype=str)
 
     # Create penquin array
-    pengu_array = draw_penguin()
+    penguin = Penguin()
 
     # Draw initial border.
     screen_array[0, :] = '#'
@@ -57,7 +97,7 @@ def main(stdscr):
             for i in range(1, total_height-1):
                 screen_array[i, total_width-2] = wall_lines[i-1]
 
-        screen_array[7:13, 15:26] = pengu_array
+        screen_array[7:13, 14:26] = penguin.fly()
 
         # Reapply border (overwrite any changes in the border area).
         screen_array[0, :] = '#'
