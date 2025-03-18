@@ -3,15 +3,17 @@ import curses
 import math
 import random
 import numpy as np
-from draw_penguin import draw_penguin_wings_down, draw_penguin_wings_up
+
 
 class Wall:
-    def __init__(self, height, width, opening_height):
+    def __init__(self, height, width, opening_height, last_center):
         self.height = height
         self.width = width
         self.opening_height = opening_height
         # Adjust opening_position relative to wall height
-        self.opening_position = random.randint(opening_height//2, height - opening_height//2 - 1)
+        upper_bound = min(last_center + 10, height - opening_height//2+1)
+        lower_bound = max(last_center - 10, opening_height//2)
+        self.opening_position = random.randint(lower_bound, upper_bound)
 
     def __str__(self):
         # Build list of rows using '#' except in the opening.
@@ -46,7 +48,7 @@ class Penguin:
         pengu_art = ["       __   ",
                      "     .' o)=-",
                      "    /.-.'   ",
-                     "   //  |\   ",
+                     "  _//  |\_  ",
                      "   ||  |'   ",
                      " _,:(_/_    "]
         pengu_array = np.array([list(line) for line in pengu_art])
@@ -55,8 +57,8 @@ class Penguin:
     def wings_up(self):
         pengu_art = ["       __   ",
                      "     .' o)=-",
-                     " _  /.-.',_ ",
-                     "  \,/  |/   ",
+                     " _  /.-.' _ ",
+                     "  \,/  |,/  ",
                      "   ||  |'   ",
                      " _,:(_/_    "]
         pengu_array = np.array([list(line) for line in pengu_art])
@@ -67,7 +69,7 @@ def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True)  # This allows getch() to be non-blocking
 
-    total_height, total_width = 20, 50
+    total_height, total_width = 30, 100
 
     # Create a 2D NumPy array for the screen filled with spaces.
     screen_array = np.full((total_height, total_width), ' ', dtype=str)
@@ -83,7 +85,8 @@ def main(stdscr):
 
     timesteps = 0
     wall_distance = 20
-    opening_height = 7
+    opening_height = 10
+    last_center = total_height//2
 
     # Current score
     score = 0
@@ -95,6 +98,7 @@ def main(stdscr):
         # Track the pressed keys
         key = stdscr.getch()
 
+        # Check if the key is ESC -> Pause Screen
         if key == 27:
             paused = True
             pause_screen = create_pause_screen(total_height, total_width, score)
@@ -106,10 +110,10 @@ def main(stdscr):
             while paused:
                 key = stdscr.getch()
                 if key == 27:
-                    curses.endwin()  # Bildschirm zurücksetzen
-                    return           # main() verlassen -> zurück ins Terminal
+                    curses.endwin()  # reset the terminal
+                    return           # exit main() function
                 elif key == 10:
-                    paused = False
+                    paused = False   # resume the game
 
         # Shift the interior (non-border) left by one column.
         # Columns 1 to total_width-2 are the interior.
@@ -120,7 +124,8 @@ def main(stdscr):
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
             # Create the wall for the interior only.
-            wall = Wall(total_height-2, 1, opening_height)
+            wall = Wall(total_height-2, 1, opening_height, last_center)
+            last_center = wall.opening_position
             wall_lines = str(wall).split("\n")
             for i in range(1, total_height-1):
                 screen_array[i, total_width-2] = wall_lines[i-1]
