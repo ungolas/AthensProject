@@ -216,7 +216,8 @@ def main(stdscr):
                     curses.endwin()  # reset the terminal
                     return           # exit main() function
                 elif key == 10:
-                    main(stdscr) 
+                    curses.endwin()  # reset the terminal
+                    return curses.wrapper(main)
 
         time.sleep(0.01)
         timesteps += 1
