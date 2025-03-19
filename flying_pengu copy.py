@@ -111,6 +111,9 @@ def main(stdscr):
 
     # mastcount for score
     mastcount=0
+
+    # timer
+    start_time=time.time()
     while True:
         # delete the pinguin from the previous iteration
         screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
@@ -159,29 +162,29 @@ def main(stdscr):
 
         # if spacebar is active the penguin jumps
         if key == 32:
-            if y_end-20>20 :
-                y_start -= 20
-                y_end -= 20          
+            if y_end-4>4 :
+                y_start -= 4
+                y_end -= 4         
         # if spacebar is not active penguin falls
         else:
-            if timesteps%1000==0:
+            end_time=time.time()
+            if timesteps%2==0:
                 if y_end+1<29:
+                    start_time=time.time
                     y_start += 1     
                     y_end += 1
 
         # if the penguin flys into the mast the boolean for bracking    p the game is activ
-        if(screen_array[y_start:y_end, x_end]=='_' or screen_array[y_start, x_end]=='|'):
+        if (np.any(screen_array[y_start:y_end, x_end]=='_') or np.any(screen_array[y_start:y_end, x_end]=='|')):
             crash=True
-        if(screen_array[y_end, x_end]=='_' or screen_array[y_end, x_end]=='|'):
-            crash=True      
+
         screen_array[y_start:y_end, x_start:x_end] = penguin.fly()
 
-
+        # method for counting the score
         if '_' in screen_array[:, x_end]:
             mastcount+=1
         else:
             mastcount=0
-        
         if mastcount==2:
             score+=1
 
@@ -214,7 +217,7 @@ def main(stdscr):
                     return           # exit main() function
                 elif key == 10:
                     main(stdscr) 
- 
+
         time.sleep(0.01)
         timesteps += 1
 

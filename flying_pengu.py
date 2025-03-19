@@ -184,8 +184,7 @@ def main(stdscr):
         stdscr.refresh()
 
         
-
-        time.sleep(0.01)
+        time.sleep(1)
         timesteps += 1
 
 def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_piece):
