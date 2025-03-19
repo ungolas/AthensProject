@@ -69,7 +69,7 @@ def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True)  # This allows getch() to be non-blocking
 
-    total_height, total_width = 30, 100
+    total_height, total_width = 40, 120
 
     # Create a 2D NumPy array for the screen filled with spaces.
     screen_array = np.full((total_height, total_width), ' ', dtype=str)
@@ -87,7 +87,7 @@ def main(stdscr):
     timesteps = 0
     wallwidth = 5                   # width of the wall
     wall_distance = 24 + wallwidth  # horizontal distance between consecutive walls
-    opening_height = 10             # height of the opening in the wall
+    opening_height = 12             # height of the opening in the wall
     offset = 6                      # maximum vertical offset of the center points of consecutive walls
     last_center = total_height//2   # initial center point of the opening
     start_draw_wall = False
@@ -111,10 +111,12 @@ def main(stdscr):
 
     # mastcount for score
     mastcount=0
-    
+
+    # timer
+    start_time=time.time()
     while True:
         # delete the pinguin from the previous iteration
-        screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
+        # screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
         
         # Track the pressed keys
         key = stdscr.getch()
@@ -144,12 +146,6 @@ def main(stdscr):
 
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
-            # # Create the wall for the interior only.
-            # wall = Wall(total_height-2, 3, opening_height, offset, last_center)
-            # last_center = wall.opening_position
-            # wall_lines = str(wall).split("\n")
-            # for i in range(1, total_height-1):
-            #     screen_array[i, total_width-2] = wall_lines[i-1]
             start_draw_wall = True
             current_wall = Wall(total_height-2, wallwidth, opening_height, offset, last_center)
             last_center = current_wall.opening_position
@@ -166,46 +162,72 @@ def main(stdscr):
 
         # if spacebar is active the penguin jumps
         if key == 32:
-            if y_end-5>5 :
-                y_start -= 5
-                y_end -= 5          
+            if y_end-4>4 :
+                y_start -= 4
+                y_end -= 4         
         # if spacebar is not active penguin falls
         else:
-            if y_end+1<29:
-               y_start += 1     
-               y_end += 1
+            end_time=time.time()
+            if timesteps%2==0:
+                if y_end<total_height-1:
+                    start_time=time.time
+                    y_start += 1     
+                    y_end += 1
 
-        # if the penguin flys into the mast the boolean for bracking up the game is activ
-        if(screen_array[y_start, x_end]=='_' or screen_array[y_start, x_end]=='|'):
-            crash=True
-        if(screen_array[y_end, x_end]=='_' or screen_array[y_end, x_end]=='|'):
-            crash=True      
-        screen_array[y_start:y_end, x_start:x_end] = penguin.fly()
+        # if the penguin flys into the mast the boolean for bracking    p the game is activ
+        # if (np.any(screen_array[y_start:y_end, x_end]=='_') or np.any(screen_array[y_start:y_end, x_end]=='|')):
+        #     crash=True
 
 
+        screen_array_pengu = screen_array.copy()
+        screen_array_pengu[y_start:y_end, x_start:x_end] = penguin.fly()
+
+        collided = check_collision(screen_array[y_start:y_end, x_start:x_end], screen_array_pengu[y_start:y_end, x_start:x_end])
+
+        # method for counting the score
         if '_' in screen_array[:, x_end]:
             mastcount+=1
         else:
             mastcount=0
-        
         if mastcount==2:
             score+=1
 
+        # Show score in the top left corner
+        score_array = get_score_array(score)
+        screen_array_pengu[1, 2:2+len(score_array)] = score_array
+
 
         # Reapply border (overwrite any changes in the border area).
-        screen_array[0, :] = '#'
-        screen_array[total_height-1, :] = '#'
-        screen_array[:, 0] = '#'
-        screen_array[:, total_width-1] = '#'
+        screen_array_pengu[0, :] = '#'
+        screen_array_pengu[total_height-1, :] = '#'
+        screen_array_pengu[:, 0] = '#'
+        screen_array_pengu[:, total_width-1] = '#'
 
         # Render the array.
         stdscr.clear()
         for row in range(total_height):
             for col in range(total_width):
-                stdscr.addch(row, col, screen_array[row, col])
+                stdscr.addch(row, col, screen_array_pengu[row, col])
         stdscr.refresh()
 
-        if(crash==True):
+        # if(crash==True):
+        #     paused = True
+        #     pause_screen = create_crash_screen(total_height, total_width, score)
+        #     stdscr.clear()
+        #     for row in range(total_height):
+        #         for col in range(total_width):
+        #             stdscr.addch(row, col, pause_screen[row, col])
+        #     stdscr.refresh()
+        #     while paused:
+        #         key = stdscr.getch()
+        #         if key == 27:
+        #             curses.endwin()  # reset the terminal
+        #             return           # exit main() function
+        #         elif key == 10:
+        #             curses.endwin()  # reset the terminal
+        #             return curses.wrapper(main)
+
+        if(collided==True):
             paused = True
             pause_screen = create_crash_screen(total_height, total_width, score)
             stdscr.clear()
@@ -216,13 +238,12 @@ def main(stdscr):
             while paused:
                 key = stdscr.getch()
                 if key == 27:
-                    curses.endwin()             # reset the terminal
-                    return                      # exit main() function
+                    curses.endwin()  # reset the terminal
+                    return           # exit main() function
                 elif key == 10:
-                    curses.endwin()             # reset the terminal
-                    return curses.wrapper(main) # restart the game
-                    
- 
+                    curses.endwin()  # reset the terminal
+                    return curses.wrapper(main)
+
         time.sleep(0.01)
         timesteps += 1
 
@@ -238,13 +259,12 @@ def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_
             return wall_piece
         else:
             return np.full((height), ' ', dtype=str)
-
+        
 def check_collision(screen_array, penguin_array):
     screen_binary = np.where(screen_array == '|', 1, 0)
     penguin_binary = np.where(penguin_array == ' ', 0, 1)
     collision = np.sum(screen_binary * penguin_binary)
     return collision > 0
-
 
 def create_pause_screen(height, width, score):
     center_width = width // 2
@@ -272,6 +292,10 @@ def create_crash_screen(height, width, score):
     pause_screen[center_height + 1, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
     return pause_screen
 
+def get_score_array(score):
+    str_score = "Score: " + str(score)
+    score_array = np.array(list(str_score))
+    return score_array
 
 if __name__ == "__main__":
     curses.wrapper(main)
