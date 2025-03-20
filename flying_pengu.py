@@ -75,6 +75,7 @@ def main(stdscr):
 
     # Create penquin array
     penguin = Penguin()
+    mask = penguin._wings_up_art != ' '  # Mask for non-space entries
 
     # Draw initial border.
     screen_array[0, :] = '#'
@@ -231,7 +232,7 @@ def main(stdscr):
 
         # Update the screen array with the penguin's new position.
         screen_array_pengu = screen_array.copy()
-        screen_array_pengu[y_start:y_end, x_start:x_end] = penguin.fly()
+        screen_array_pengu[y_start:y_end, x_start:x_end][mask] = penguin.fly()[mask]    
 
         # Check for collision between the penguin and the wall.
         collided = check_collision(screen_array[y_start:y_end, x_start:x_end], screen_array_pengu[y_start:y_end, x_start:x_end])
