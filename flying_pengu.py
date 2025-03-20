@@ -27,9 +27,8 @@ class Penguin:
         # Pre-calculate both art states once
         self._wings_up_art = self.wings_up()
         self._wings_down_art = self.wings_down()
-        self._empty_art = self.pengu_gone()
         self.ascii_art = self._wings_up_art
-        self.fly_status = True
+        self.fly_status = False
         self.timesteps = 0
 
     def fly(self):
@@ -58,14 +57,6 @@ class Penguin:
                      " _,:(_/_    "]
         return np.array([list(line) for line in pengu_art])
 
-    def pengu_gone(self):
-        pengu_art=["            ",
-                   "            ",
-                   "            ",
-                   "            ",
-                   "            ",
-                   "            "]
-        return np.array([list(line) for line in pengu_art])
 
 def main(stdscr):
     curses.curs_set(0)
@@ -117,9 +108,6 @@ def main(stdscr):
     x_start=14
     x_end=26
 
-    # boolean for crash
-    crash=False
-
     # mastcount for score
     mastcount=0
 
@@ -132,9 +120,6 @@ def main(stdscr):
 
         # track time
         start_time = time.time()
-
-        # delete the pinguin from the previous iteration
-        # screen_array[y_start:y_end, x_start:x_end] = penguin.pengu_gone()
         
         # Track the pressed keys
         key = stdscr.getch()
@@ -196,16 +181,15 @@ def main(stdscr):
             y_p = 0
 
         # update the position of the penguin
-        #print2file(y)
+        # print2file(y)
         y_start = round(y)
         y_end = y_start+6
 
-
-
-
+        # Update the screen array with the penguin's new position.
         screen_array_pengu = screen_array.copy()
         screen_array_pengu[y_start:y_end, x_start:x_end] = penguin.fly()
 
+        # Check for collision between the penguin and the wall.
         collided = check_collision(screen_array[y_start:y_end, x_start:x_end], screen_array_pengu[y_start:y_end, x_start:x_end])
 
         # method for counting the score
@@ -216,6 +200,9 @@ def main(stdscr):
         if mastcount==2:
             score+=1
 
+        # Show score in the top left corner
+        score_array = get_score_array(score)
+        screen_array_pengu[1, 2:2+len(score_array)] = score_array
 
         # Reapply border (overwrite any changes in the border area).
         screen_array_pengu[0, :] = '#'
@@ -230,6 +217,7 @@ def main(stdscr):
                 stdscr.addch(row, col, screen_array_pengu[row, col])
         stdscr.refresh()
 
+        # Check if the penguin collided with the wall.
         if(collided==True):
             paused = True
             pause_screen = create_crash_screen(total_height, total_width, score)
@@ -253,22 +241,51 @@ def main(stdscr):
         if elapsed_time < 1/fps:
             time.sleep((1/fps) - elapsed_time)
 
-        #print2file(time.time()-start_time)
+        # Debug 30fps runtime
+        # print2file(time.time()-start_time)
 
 def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_piece):
-        if current_wall_piece == 1 or current_wall_piece == wallwidth:
-            wall_piece = np.full((height-2), '|', dtype=str)
-            wall_piece[opening_position - math.ceil(opening_height/2):opening_position + math.ceil(opening_height/2)] = ' '
-            return wall_piece
-        elif current_wall_piece > 1 and current_wall_piece < wallwidth:
-            wall_piece = np.full((height-2), ' ', dtype=str)
-            wall_piece[opening_position + math.ceil(opening_height/2)-1] = '_'
-            wall_piece[opening_position - math.ceil(opening_height/2)-1] = '_'
-            return wall_piece
-        else:
-            return np.full((height), ' ', dtype=str)
+    """ Creates a single vertical slice of a wall with an opening.
+    Args:
+        height (int): The total height of the wall.
+        wallwidth (int): The width of the wall (number of slices).
+        opening_height (int): The height of the opening in the wall.
+        opening_position (int): The vertical center position of the opening.
+        current_wall_piece (int): The current slice of the wall being drawn (1 to wallwidth).
+    Returns:
+        np.ndarray: A 1D array representing the vertical slice of the wall.
+    """
+    if current_wall_piece == 1 or current_wall_piece == wallwidth:
+        wall_piece = np.full((height-2), '|', dtype=str)
+        wall_piece[opening_position - math.ceil(opening_height/2):opening_position + math.ceil(opening_height/2)] = ' '
+        return wall_piece
+    elif current_wall_piece > 1 and current_wall_piece < wallwidth:
+        wall_piece = np.full((height-2), ' ', dtype=str)
+        wall_piece[opening_position + math.ceil(opening_height/2)-1] = '_'
+        wall_piece[opening_position - math.ceil(opening_height/2)-1] = '_'
+        return wall_piece
+    else:
+        return np.full((height), ' ', dtype=str)
+    
+def get_score_array(score):
+    """ Creates a NumPy array representing the current score.
+    Args:
+        score (_type_): The current score of the player.
+    Returns:
+        _type_: A NumPy array representing the current score.
+    """
+    str_score = "Score: " + str(score)
+    score_array = np.array(list(str_score))
+    return score_array
         
 def check_collision(screen_array, penguin_art):
+    """ Checks for a collision between the penguin and the wall.
+    Args:
+        screen_array (np.ndarray): A 2D array representing the current screen state.
+        penguin_art (np.ndarray): A 2D array representing the penguin's ASCII art.
+    Returns:
+        bool: True if a collision is detected, False otherwise.
+    """
     # Only check wall characters ('|') against non-space penguin characters
     for r in range(penguin_art.shape[0]):
         for c in range(penguin_art.shape[1]):
@@ -277,6 +294,14 @@ def check_collision(screen_array, penguin_art):
     return False
 
 def create_pause_screen(height, width, score):
+    """ Creates the pause screen with a message and the current score.
+    Args:
+        height (int): The height of the screen.
+        width (int): The width of the screen.
+        score (int): The current score of the player.
+    Returns:
+        np.ndarray: A 2D array representing the pause screen.
+    """
     center_width = width // 2
     center_height = height // 2
     pause_screen = np.full((height, width), ' ', dtype=str)
@@ -290,6 +315,14 @@ def create_pause_screen(height, width, score):
     return pause_screen
 
 def create_crash_screen(height, width, score):
+    """ Creates the crash screen with a game over message and the final score.
+    Args:
+        height (int): The height of the screen.
+        width (int): The width of the screen.
+        score (int): The final score of the player.
+    Returns:
+        np.ndarray: A 2D array representing the crash screen.
+    """
     center_width = width // 2
     center_height = height // 2
     pause_screen = np.full((height, width), ' ', dtype=str)
