@@ -153,9 +153,9 @@ def main(stdscr):
         fps = 40
         opening_height = 10
     elif difficulty == 3:
-        fps = 45
+        fps = 50
         opening_height = 10
-        wall_distance = 32 + wallwidth
+        wall_distance = 30 + wallwidth
 
 
     while True:
@@ -179,7 +179,9 @@ def main(stdscr):
                 key = stdscr.getch()
                 if key == 27:
                     curses.endwin()  # reset the terminal
-                    return           # exit main() function
+                    start_game = True
+                    difficulty = 1
+                    return curses.wrapper(main)          
                 elif key == 10:
                     paused = False   # resume the game
         
@@ -272,7 +274,9 @@ def main(stdscr):
                 key = stdscr.getch()
                 if key == 27:
                     curses.endwin()  # reset the terminal
-                    return           # exit main() function
+                    start_game = True
+                    difficulty = 1
+                    return curses.wrapper(main)          
                 elif key == 10:
                     curses.endwin()  # reset the terminal
                     return curses.wrapper(main)
