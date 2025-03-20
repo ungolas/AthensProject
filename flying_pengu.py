@@ -6,25 +6,25 @@ import numpy as np
 from wall import Wall
 from penguin import Penguin
 from helper_functions import *
+import os
 
 # Global variable to start the game and choose the difficulty
 start_game = True
 difficulty = 1
+total_height, total_width= 30, 150 # Height and width of the screen.
 
 
 def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True)  # This allows getch() to be non-blocking
 
-    global start_game, difficulty
-
-    total_height, total_width = 30, 150
+    global start_game, difficulty, total_height, total_width # Use the global variables
 
     # Create a 2D NumPy array for the screen filled with spaces.
     screen_array = np.full((total_height, total_width), ' ', dtype=str)
 
     # Create penquin array
-    penguin = Penguin()
+    penguin = Penguin() # Create a penguin object.
     mask = penguin._wings_up_art != ' '  # Mask for non-space entries
 
     # Draw initial border.
@@ -34,15 +34,15 @@ def main(stdscr):
     screen_array[:, total_width-1] = '#'
 
     # Variables for the walls
-    timesteps = 0
-    wallwidth = 8                   # width of the wall
-    wall_distance = 40 + wallwidth  # horizontal distance between consecutive walls
-    opening_height = 12            # height of the opening in the wall
-    offset = 6                      # maximum vertical offset of the center points of consecutive walls
-    last_center = total_height//2   # initial center point of the opening
-    start_draw_wall = False
-    draw_wall_width = 0
-    current_wall = None
+    timesteps = 0 # Number of timesteps since the start of the game
+    wallwidth = 8 # width of the wall
+    wall_distance = 40 + wallwidth # horizontal distance between consecutive walls
+    opening_height = 12 # height of the opening in the wall
+    offset = 6 # maximum vertical offset of the center points of consecutive walls
+    last_center = total_height//2 # initial center point of the opening
+    start_draw_wall = False # flag to start drawing a new wall
+    draw_wall_width = 0 # width of the wall being drawn
+    current_wall = None # current wall object
 
     # Current score
     score = 0
@@ -75,13 +75,17 @@ def main(stdscr):
 
     if start_game:
         # Create the start screen and wait for the user to choose a difficulty.
-        start_game = False
+        start_game = False # Don't show the start screen again.
         start_screen = create_start_screen(total_height, total_width)
-        stdscr.clear()
+        stdscr.clear() # Clear the terminal
+
+        # Render the start screen.
         for row in range(total_height):
             for col in range(total_width):
                 stdscr.addch(row, col, start_screen[row, col])
         stdscr.refresh()
+
+        # Wait for the user to choose a difficulty.
         while True:
             key = stdscr.getch()
             if key == 49:
@@ -94,9 +98,10 @@ def main(stdscr):
                 difficulty = 3
                 break
             elif key == 27:
-                curses.endwin()  # reset the terminal
-                return           # exit main() function
+                curses.endwin() # reset the terminal
+                return # exit main() function
             
+    # Set the difficulty based on the user's choice.
     if difficulty == 1:
         fps = 30
         opening_height = 12
@@ -109,6 +114,7 @@ def main(stdscr):
         wall_distance = 30 + wallwidth
 
 
+    # Main game loop
     while True:
 
         # track time
@@ -121,20 +127,24 @@ def main(stdscr):
         if key == 27:
             paused = True
             pause_screen = create_pause_screen(total_height, total_width, score)
-            stdscr.clear()
+            stdscr.clear() # Clear the terminal
+
+            # Render the pause screen.
             for row in range(total_height):
                 for col in range(total_width):
                     stdscr.addch(row, col, pause_screen[row, col])
             stdscr.refresh()
+
+            # Wait for the user to take action.
             while paused:
                 key = stdscr.getch()
                 if key == 27:
-                    curses.endwin()  # reset the terminal
+                    curses.endwin() # reset the terminal
                     start_game = True
                     difficulty = 1
                     return curses.wrapper(main)          
                 elif key == 10:
-                    paused = False   # resume the game
+                    paused = False # resume the game
         
         # Shift the interior (non-border) left by one column.
         # Columns 1 to total_width-2 are the interior.
@@ -145,13 +155,16 @@ def main(stdscr):
         # Every wall_distance steps, add a new wall in the new rightmost interior column.
         if timesteps % wall_distance == 0:
             start_draw_wall = True
-            current_wall = Wall(total_height-2, wallwidth, opening_height, offset, last_center)
-            last_center = current_wall.opening_position
+            current_wall = Wall(total_height-2, wallwidth, opening_height, offset, last_center) # Create a new wall object.
+            last_center = current_wall.opening_position # Update the last center point.
             
+        # Draw the wall in the new rightmost interior column.
         if start_draw_wall:
             draw_wall_width += 1
             if draw_wall_width <= wallwidth:
                 wall_piece = draw_wall(total_height, wallwidth, opening_height, last_center, draw_wall_width)
+
+                # Add the wall piece to the screen array.
                 for i in range(1, total_height-1):
                     screen_array[i, total_width-2] = wall_piece[i-1]
             else:
@@ -160,8 +173,10 @@ def main(stdscr):
 
         # if spacebar is active the penguin jumps
         if key == 32:
+            # if spacebar is pressed, velocity is set to -imp
             y_p = - imp
         else:
+            # if spacebar is not pressed, velocity decreases by the gravitational force
             y_p = y_p + g * (1/fps)
 
         # update the position of the penguin
@@ -176,13 +191,15 @@ def main(stdscr):
             y_p = 0
 
         # update the position of the penguin
-        # print2file(y)
         y_start = round(y)
         y_end = y_start+6
 
         # Update the screen array with the penguin's new position.
         screen_array_pengu = screen_array.copy()
-        screen_array_pengu[y_start:y_end, x_start:x_end][mask] = penguin.fly()[mask]    
+
+        # Update the screen array with the penguin's new position.
+        # mask added to only update the penguins ascii art and not the empty spaces
+        screen_array_pengu[y_start:y_end, x_start:x_end][mask] = penguin.fly()[mask]
 
         # Check for collision between the penguin and the wall.
         collided = check_collision(screen_array[y_start:y_end, x_start:x_end], screen_array_pengu[y_start:y_end, x_start:x_end])
@@ -217,19 +234,23 @@ def main(stdscr):
             paused = True
             pause_screen = create_crash_screen(total_height, total_width, score)
             stdscr.clear()
+
+            # Render the crash screen.
             for row in range(total_height):
                 for col in range(total_width):
                     stdscr.addch(row, col, pause_screen[row, col])
             stdscr.refresh()
+
+            # Wait for the user to take action.
             while paused:
                 key = stdscr.getch()
                 if key == 27:
-                    curses.endwin()  # reset the terminal
+                    curses.endwin() # reset the terminal
                     start_game = True
                     difficulty = 1
                     return curses.wrapper(main)          
                 elif key == 10:
-                    curses.endwin()  # reset the terminal
+                    curses.endwin() # reset the terminal
                     return curses.wrapper(main)
 
         # Calculate the time to sleep to maintain 30 frames per second.
@@ -238,8 +259,7 @@ def main(stdscr):
         if elapsed_time < 1/fps:
             time.sleep((1/fps) - elapsed_time)
 
-        # Debug runtime
-        # print2file(time.time()-start_time)
-
 if __name__ == "__main__":
+    # Set the terminal size
+    os.system(f'mode con cols={total_width} lines={total_height+1}')
     curses.wrapper(main)

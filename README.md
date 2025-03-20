@@ -18,7 +18,7 @@ Help Pengu navigate through an endless series of walls by carefully timing your 
 
 ## How to Play
 
-1. Run the game using _exec.cmd or by executing `python3 flying_pengu_clean.py`
+1. Run the game using by executing `python3 flying_pengu.py`
 2. Select your difficulty level (1-Easy, 2-Medium, 3-Hard)
 ![alt text](main_menu.png)
 3. Use the following controls:
