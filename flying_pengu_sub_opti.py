@@ -24,11 +24,7 @@ class Penguin:
     def __init__(self):
         self.height = 6
         self.width = 12
-        # Pre-calculate both art states once
-        self._wings_up_art = self.wings_up()
-        self._wings_down_art = self.wings_down()
-        self._empty_art = self.pengu_gone()
-        self.ascii_art = self._wings_up_art
+        self.ascii_art = self.wings_up()
         self.fly_status = True
         self.timesteps = 0
 
@@ -37,7 +33,10 @@ class Penguin:
         if self.timesteps % 10 == 0:
             self.fly_status = not self.fly_status
             self.timesteps = 0
-            self.ascii_art = self._wings_down_art if self.fly_status else self._wings_up_art
+            if(self.fly_status):
+                self.ascii_art = self.wings_down()
+            else:
+                self.ascii_art = self.wings_up()
         return self.ascii_art
     
     def wings_down(self):
@@ -47,7 +46,8 @@ class Penguin:
                      "  _//  |\_  ",
                      "   ||  |'   ",
                      " _,:(_/_    "]
-        return np.array([list(line) for line in pengu_art])
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
     
     def wings_up(self):
         pengu_art = ["       __   ",
@@ -56,7 +56,8 @@ class Penguin:
                      "  \,/  |,/  ",
                      "   ||  |'   ",
                      " _,:(_/_    "]
-        return np.array([list(line) for line in pengu_art])
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
 
     def pengu_gone(self):
         pengu_art=["            ",
@@ -65,7 +66,8 @@ class Penguin:
                    "            ",
                    "            ",
                    "            "]
-        return np.array([list(line) for line in pengu_art])
+        pengu_array = np.array([list(line) for line in pengu_art])
+        return pengu_array
 
 def main(stdscr):
     curses.curs_set(0)
@@ -268,13 +270,11 @@ def draw_wall(height, wallwidth, opening_height, opening_position, current_wall_
         else:
             return np.full((height), ' ', dtype=str)
         
-def check_collision(screen_array, penguin_art):
-    # Only check wall characters ('|') against non-space penguin characters
-    for r in range(penguin_art.shape[0]):
-        for c in range(penguin_art.shape[1]):
-            if screen_array[r, c] == '|' and penguin_art[r, c] != ' ':
-                return True
-    return False
+def check_collision(screen_array, penguin_array):
+    screen_binary = np.where(screen_array == '|', 1, 0)
+    penguin_binary = np.where(penguin_array == ' ', 0, 1)
+    collision = np.sum(screen_binary * penguin_binary)
+    return collision > 0
 
 def create_pause_screen(height, width, score):
     center_width = width // 2
