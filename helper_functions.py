@@ -99,9 +99,9 @@ def create_pause_screen(height, width, score):
     str_paused = "GAME PAUSED"
     str_press = "Press Enter to resume or ESC to quit"
     str_score = f"Score: {score}"
-    pause_screen[center_height - 1, center_width - math.floor(len(str_paused)/2):center_width + math.ceil(len(str_paused)/2)] = list(str_paused)
+    pause_screen[center_height - 3, center_width - math.floor(len(str_paused)/2):center_width + math.ceil(len(str_paused)/2)] = list(str_paused)
     pause_screen[center_height, center_width - math.floor(len(str_press)/2):center_width + math.ceil(len(str_press)/2)] = list(str_press)
-    pause_screen[center_height + 1, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
+    pause_screen[center_height + 2, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
     return pause_screen
 
 def create_crash_screen(height, width, score):
@@ -120,7 +120,7 @@ def create_crash_screen(height, width, score):
     str_paused = "GAME OVER"
     str_press = "Press Enter to start again or ESC to quit"
     str_score = f"Score: {score}"
-    pause_screen[center_height - 1, center_width - math.floor(len(str_paused)/2):center_width + math.ceil(len(str_paused)/2)] = list(str_paused)
+    pause_screen[center_height - 3, center_width - math.floor(len(str_paused)/2):center_width + math.ceil(len(str_paused)/2)] = list(str_paused)
     pause_screen[center_height, center_width - math.floor(len(str_press)/2):center_width + math.ceil(len(str_press)/2)] = list(str_press)
-    pause_screen[center_height + 1, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
+    pause_screen[center_height + 2, center_width - math.floor(len(str_score)/2):center_width + math.ceil(len(str_score)/2)] = list(str_score)
     return pause_screen
