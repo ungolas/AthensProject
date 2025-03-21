@@ -4,7 +4,7 @@ Pengu Fly is a terminal-based ASCII game where you control a flying penguin navi
 
 Help Pengu navigate through an endless series of walls by carefully timing your jumps. Each successfully cleared wall earns you points. The game features smooth animations, physics-based movement, and increasing difficulty levels.
 
-![alt text](gameplay.png)
+![alt text](PICs/gameplay.png)
 
 ## Features
 
@@ -18,9 +18,9 @@ Help Pengu navigate through an endless series of walls by carefully timing your 
 
 ## How to Play
 
-1. Run the game using by executing `python3 flying_pengu.py`
+1. Run the game using by executing `python3 flying_pengu.py` in your Commandline
 2. Select your difficulty level (1-Easy, 2-Medium, 3-Hard)
-![alt text](main_menu.png)
+![alt text](PICS/main_menu.png)
 3. Use the following controls:
    - **SPACE**: Make Pengu jump/fly
    - **ESC**: Pause the game
@@ -52,7 +52,6 @@ The goal is to navigate Pengu through as many walls as possible without collidin
 - penguin.py: Defines the Penguin class with animation states
 - wall.py: Implements the Wall class for generating walls with openings
 - helper_functions.py: Utility functions for drawing and game logic
-- _exec.cmd: Windows batch file to set terminal size and run the game
 
 ## Game Mechanics
 
@@ -71,13 +70,10 @@ The game is built using:
 
 ## Improvements
 
-The files `flying_pengu_clean.py` and `flying_pengu.py` are the same game, but the former has been cleaned up and refactored for better readability and maintainability by Claude 3.7 Sonnet Thinking (preview).
+The files `flying_pengu_clean.py` and `flying_pengu.py` are the same game, but the code has been cleaned up and refactored for better readability and maintainability by Claude 3.7 Sonnet Thinking (preview).
 
 The file `flying_pengu_optimiert.py` is an optimized version of the game with improved performance and less functionality again by Claude 3.7 Sonnet Thinking (preview).
 
-## License
-
-This project is open-source and available under the MIT License.
 
 ## Contributors
 

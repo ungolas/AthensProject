@@ -1,7 +1,5 @@
 import time
 import curses
-import math
-import random
 import numpy as np
 from wall import Wall
 from penguin import Penguin
@@ -209,7 +207,7 @@ def main(stdscr):
             mastcount+=1
         else:
             mastcount=0
-        if mastcount==2:
+        if mastcount == wallwidth//2:
             score+=1
 
         # Show score in the top left corner
