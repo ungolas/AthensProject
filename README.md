@@ -20,7 +20,7 @@ Help Pengu navigate through an endless series of walls by carefully timing your 
 
 1. Run the game using by executing `python3 flying_pengu.py` in your Commandline
 2. Select your difficulty level (1-Easy, 2-Medium, 3-Hard)
-![alt text](PICS/main_menu.png)
+![alt text](PICs/main_menu.png)
 3. Use the following controls:
    - **SPACE**: Make Pengu jump/fly
    - **ESC**: Pause the game
