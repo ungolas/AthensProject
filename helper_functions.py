@@ -69,7 +69,7 @@ def create_start_screen(height, width):
     start_screen = np.full((height, width), ' ', dtype=str)
 
     str_name = "Pengu Fly"
-    str_press = "Chosse the difficulty by pressing the number:"
+    str_press = "Choose the difficulty by pressing the number:"
     str_easy = "1 - Easy"
     str_medium = "2 - Medium"
     str_hard = "3 - Hard"
